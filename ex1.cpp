@@ -11,7 +11,8 @@ int main(){
     int b[2],e[2];
     int N,M,P,Q,i;
     double X,Y;
-    int Z=0,s,t;
+    double Z=0;
+    double s,t;
 
     cin>>N>>M>>P>>Q;
 
@@ -39,13 +40,9 @@ int main(){
     cout<<Xq[1];
     cout<<Yq[1]<<"\n";
 
-    cout<<Xq[1]-Xp[1]<<"\n";
-    cout<<Yp[0]-Yq[0]<<"\n";
-    cout<<Xq[0]-Xp[0]<<"\n";
-    cout<<Yq[1]-Yp[1]<<"\n";
-
-    Z=abs(((Xq[1]-Xp[1])*(Yp[0]-Yq[0]))+((Xq[0]-Xp[0])*(Yq[1]-Yp[1])));
     
+    Z = abs(((Xq[0] - Xp[0]) * (Yp[1] - Yq[1])) + ((Xq[1] - Xp[1]) * (Yq[0] - Yp[0])));
+
     cout<<Z<<"\n";
     
     if(Z==0){
@@ -53,23 +50,31 @@ int main(){
         exit(1);
     }
     else{
-        s=((Yp[0]-Yq[0])*(Xq[1]-Xp[1])-(Xq[0]-Xp[0])*(Yp[1]-Yq[1]))/Z*(Xp[0]-Xp[1]);
-        t=((Yp[0]-Yq[0])*(Xq[1]-Xp[1])-(Xq[0]-Xp[0])*(Yp[1]-Yq[1]))/Z*(Yp[0]-Yp[1]);
+        
+        s = ((Yp[1] - Yq[1]) * (Xp[1] - Xp[0]) + (Xq[1] - Xp[1]) * (Yp[1] - Yp[0])) / Z;
+        t = ((Yp[0] - Yq[0]) * (Xp[1] - Xp[0]) + (Xq[0] - Xp[0]) * (Yp[1] - Yp[0])) / Z;
     }
 
     cout<<s<<"\n";
     cout<<t<<"\n";
 
-    if(0<=s<=1&&0<=t<=1){
-        X=Xp[1]+(Xq[1]-Xp[1])*s;
-        Y=Yp[1]+(Yq[1]-Yp[1])*s;
-        cout<<"交点座標は"<<"("<<X<<","<<Y<<")"<<"です\n"<<endl;
+    
+    if (0 <= s && s <= 1){
+        if (0 <= t && t <= 1){
+            X = Xp[0] + (Xq[0] - Xp[0]) * s;
+        Y = Yp[0] + (Yq[0] - Yp[0]) * s;
+        cout << "交点座標は"
+             << "(" << X << "," << Y << ")"
+             << "です\n"
+             << endl;
+        }
     }
-    else{
-        cout<<"NA\n"<<endl;
+    else
+    {
+        cout << "NA\n"
+             << endl;
         exit(2);
     }
-
 
     return 0;
 }
