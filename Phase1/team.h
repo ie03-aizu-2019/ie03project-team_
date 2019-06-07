@@ -20,10 +20,11 @@ extern int N,M,P,Q;
 struct Point{
     double x,y;
 };
+
 struct Line{
-    double x,y;
+    Point P,Q;
 };
 
-Point searchIntersection(Point P1,Point P2,Point P3,Point P4);
+Point searchIntersection(Line L1, Line L2);
 int to_int(string s);
 int dijkstra(int start, int goal);
