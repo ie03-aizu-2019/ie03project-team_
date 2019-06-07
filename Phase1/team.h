@@ -18,7 +18,11 @@ using namespace std;
 extern int N,M,P,Q; 
 
 struct Point{
-    double x,y;
+    double x,y; 
+
+    bool operator<(const Point& right)const{
+        return x==right.x?y<right.y:x<right.x;
+  }
 };
 
 struct Line{

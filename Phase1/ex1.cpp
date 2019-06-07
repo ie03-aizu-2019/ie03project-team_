@@ -1,7 +1,48 @@
 #include <iostream>
 #include <vector>
-#include "team.h"
 using namespace std;
+
+#define Nmax 1000
+#define Nmin 2
+#define Mmax 500
+#define Mmin 1
+#define Qmax 100
+#define Qmin 0
+#define XYmax 1000
+#define XYmin 0
+
+#define INF 1e10
+#define EPS 1e-8
+
+//地点数、道数、最短ルート数
+extern int N,M,P,Q; 
+
+struct Point{
+    double x,y; 
+};
+
+struct Line{
+    Point P,Q;
+};
+
+//交点検索
+Point searchIntersection(Line L1, Line L2){
+    double Z,S,T;
+    
+    Z = abs(((L1.Q.x-L1.P.x) * (L2.P.y-L2.Q.y)) + ((L2.Q.x-L2.P.x) * (L1.Q.y-L1.P.y)));
+    if(-EPS<Z && Z<EPS) return {INF,INF};
+    else{
+        S=abs(((L2.P.y - L2.Q.y) * (L2.P.x - L1.P.x) + (L2.Q.x - L2.P.x) * (L2.P.y - L1.P.y)))/Z;
+        T=abs(((L1.P.y - L1.Q.y) * (L2.P.x - L1.P.x) + (L1.Q.x - L1.P.x) * (L2.P.y - L1.P.y)))/Z;
+    }
+
+    if ((0<S && S<1) && (0<T && T<1)){
+            double X = L1.P.x + (L1.Q.x - L1.P.x) * S;
+            double Y = L1.P.y + (L1.Q.y - L1.P.y) * S;
+            return {X,Y};
+    }
+    else return {INF,INF};
+}
 
 int main(){
     int N,M,P,Q; 
@@ -48,3 +89,4 @@ int main(){
 
     return 0;
 }
+
