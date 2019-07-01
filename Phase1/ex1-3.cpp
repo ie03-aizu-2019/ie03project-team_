@@ -106,15 +106,13 @@ int main(){
     cout<<"-------------------------------------\n";
     //M+m
     for(i=0;i<M+m;i++){
-        cout<<"i="<<i<<"\t";
-        
         for(j=0;j<M+m;j++){
-            cout<<"j="<<j<<"\t";
+            //cout<<"j="<<j<<"\t";
             Z = 0;
             S = 0;
             T = 0;
             Z = abs(((Xq[i] - Xp[i]) * (Yp[j] - Yq[j])) + ((Xq[j] - Xp[j]) * (Yq[i] - Yp[i])));
-            cout<<"S="<<S<<"T="<<T<<"Z="<<Z<<"\n";
+            //cout<<"S="<<S<<"T="<<T<<"Z="<<Z<<"\n";
            
             if(EPS<=Z && Z<=EPS) continue;
             else{
@@ -131,7 +129,7 @@ int main(){
                if((X==Xp[i]&&Y==Yp[i]) || (X==Xp[j]&&Y==Yp[j]) || (X==Xq[i]&&Y==Yq[i]) || (X==Xq[j]&&Y==Yq[j])){
                     /*交点が端点の場合の隣接行列を更新*/
                     if((X!=Xp[i]&&Y!=Yp[i])&&(X!=Xq[i]&&Y!=Yq[i])){
-                        cout<<"in1\n";
+                        //cout<<"in1\n";
                         Distance[b[i]-1][e[i]-1]=-1;
                         Distance[e[i]-1][b[i]-1]=-1;   
                         rx1=Xq[i];
@@ -162,7 +160,7 @@ int main(){
                             }
                         }
                         if(X==Xq[j]&&Y==Yq[j]){
-                            cout<<" in2\n";
+                            //cout<<" in2\n";
                             Distance[b[i]-1][e[j]-1]=1;
                             Distance[e[j]-1][b[i]-1]=1;
                             Distance[e[j]-1][e[i]-1]=1;
@@ -195,7 +193,7 @@ int main(){
                         ry1=Yq[j];
                         re2=e[j];
                         if(X==Xp[i]&&Y==Yp[i]){
-                            cout<<" in3\n";
+                            //cout<<" in3\n";
                             Distance[b[i]-1][b[j]-1]=1;
                             Distance[b[j]-1][b[i]-1]=1;
                             Distance[b[i]-1][e[j]-1]=1;
@@ -264,7 +262,7 @@ int main(){
                         Distance[N+k][l]=1;
                     else Distance[N+k][l]=-1;
                 }
-                cout<<" inX\n";
+                //cout<<" inX\n";
                 Distance[b[i]-1][e[i]-1]=-1;
                 Distance[e[i]-1][b[i]-1]=-1;
                 Distance[b[j]-1][e[j]-1]=-1;
@@ -306,7 +304,7 @@ int main(){
             }
             else continue;
         }
-        cout<<"\n";
+
     }
     
 
@@ -321,15 +319,6 @@ int main(){
         }
     }
     
-    for(i=0;i<M+m;i++){
-        cout<<b[i]<<"\t";
-    }
-    cout<<"\n";
-    for(i=0;i<M+m;i++){
-        cout<<e[i]<<"\t";
-    }
-    cout<<"\n";
-    cout<<"-------------------------------------\n";
     for(i=0;i<M+m;i++){
         cout<<setprecision(3)<<Xp[i]<<"\t";
     }
@@ -356,16 +345,7 @@ int main(){
         cout<<"\n";
     }
 
-    /*char型で読み取った地点をint型で返す*/
-    for(i=0;i<Q;i++){
-        int_s[i]=To_int(s[i]); //出発地点番号
-        int_d[i]=To_int(d[i]); //目的地点番号
-        int_g[i]=To_int(g[i]); 
-
-        if(s[i][0]=='C' && int_s[i]>k) cout<<"NA"<<"\n";
-        if(d[i][0]=='C' && int_d[i]>k) cout<<"NA"<<"\n";
-        
-    }
+   
     return 0;
 }
     

@@ -16,7 +16,7 @@ Point searchIntersection(Line L1, Line L2){
     if ((0<=S && S<=1) && (0<=T && T<=1)){
             double X = L1.P.x + (L1.Q.x - L1.P.x) * S;
             double Y = L1.P.y + (L1.Q.y - L1.P.y) * S;
-            
+            if(X==L1.P.x && Y=)
             return {X,Y};
     }
     else return {INF,INF};

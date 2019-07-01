@@ -5,18 +5,16 @@ using namespace std;
 
 #define Nmax 1000
 #define Nmin 2
-#define Mmax 500
+#define Mmax 100
 #define Mmin 1
-#define Qmax 100
+#define Qmax 0
 #define Qmin 0
 #define XYmax 1000
 #define XYmin 0
-
 #define INF 1e10
 #define EPS 1e-8
 
-//地点数、道数、最短ルート数
-extern int N,M,P,Q; 
+int N,M,P,Q; 
 
 struct Point{
     double x,y; 
@@ -29,6 +27,7 @@ struct Point{
 struct Line{
     Point P,Q;
 };
+
 
 //交点検索
 Point searchIntersection(Line L1, Line L2){
@@ -51,7 +50,6 @@ Point searchIntersection(Line L1, Line L2){
 
 
 int main(){
-    int N,M,P,Q; 
     double x,y;
     int b,e;
     int i,j;
@@ -59,16 +57,16 @@ int main(){
 
     cin>>N>>M>>P>>Q;
     //入力値のエラーメッセージ
-    if(Nmax<N || Nmin>N){ 
+    if(Nmax<N || N<Nmin){ 
         cout<<"ERROR: "<<Nmin<<"<=N<="<<Nmax<<"\n";
         exit(1);
     }
-    if(Mmax<=M || 1>=M){
+    if(Mmax<M || M<Mmin){
         cout<<"ERROR: "<<Nmin<<"<=N<="<<Nmax<<"\n";
         exit(2);
     }
-    if(Qmax<Q || 0>Q){
-        cout<<"ERROR: 0<=Q<="<<Qmax<<"\n";
+    if(Qmax<Q || Q<Qmin){
+        cout<<"ERROR: "<<Qmin<<"<=Q<="<<Qmax<<"\n";
         exit(3);
     }
 
