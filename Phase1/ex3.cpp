@@ -3,7 +3,8 @@
 #include <algorithm>
 #include <string>
 #include <cmath>
-#include <queue>
+#include <float.h>
+#include <list>
 using namespace std;
 
 //マクロ定義
@@ -11,8 +12,7 @@ using namespace std;
 #define Nmin 2
 
 #define Mmax 500
-#define Mm
-in 1
+#define Mmin 2
 
 #define Qmax 100
 #define Qmin 0
@@ -25,21 +25,21 @@ in 1
 
 #define Vmax 10
 
-//構造体,グローバル変数
+#define DEBUG
+//構造体
 //************************************************************************************
-int N,M,P,Q;
-vector<Node> node;
-
 struct Point{
-    double x,y; 
+    double x,y;
+    int P_ID; 
 
     bool operator<(const Point& right)const{
         return x==right.x?y<right.y:x<right.x;
-  }
+    }
 };
 
 struct Line{
     Point P,Q;
+    int L_ID;
 };
 
 struct Qdata{
@@ -49,47 +49,153 @@ struct Qdata{
 };
 
 struct Node{
-    vector<int> edges_to
-    vector<int> edges_cost;
+    vector<int> edges_to;
+    vector<double> edges_cost;
 
     bool done;
     int cost;
     int from;
-}
+};
 
+//グローバル変数
+int N,M,P,Q;
+
+bool resarch = false;
+int cross_count = 0;              // 交点の数
+int node_count = 0;               // nodeの数
+vector<Point> point;            // point
+vector<Line> line;              // line
+
+Node node[Nmax];                // ダイクストラ法のnode
+list<Line> road;              // ダイクストラ法のroad
 
 //************************************************************************************
 
 //関数
 //************************************************************************************
+
+//距離計算
+double Distance(Point P1, Point P2){
+    return sqrt((P1.x-P2.x)*(P1.x-P2.x)
+                +(P1.y-P2.y)*(P1.y-P2.y));
+}
+
+//edgeの追加
+void addEdge(int v, int u, double weight){	
+	node_count++;
+    node[u].edges_to.push_back( v );
+	node[u].edges_cost.push_back( weight );
+
+	node[v].edges_to.push_back( u );
+	node[v].edges_cost.push_back( weight );
+}
+
 //交点検索
 Point searchIntersection(Line L1, Line L2){
     double Z,S,T;
     
-    Z = abs(((L1.Q.x-L1.P.x) * (L2.P.y-L2.Q.y)) + ((L2.Q.x-L2.P.x) * (L1.Q.y-L1.P.y)));
-    if(-EPS<Z && Z<EPS){
-        addEdge(sizeof(node),sizeof(node)+1,Distance(L1));
-        addEdge(sizeof(node),sizeof(node)+1,Distance(L2));
+    Z = fabs(((L1.Q.x-L1.P.x) * (L2.P.y-L2.Q.y)) + ((L2.Q.x-L2.P.x) * (L1.Q.y-L1.P.y)));
+    if( -EPS< Z && Z < EPS ){
+        cout<<"in0 <-------------------------------"<<endl;
         return {INF,INF};
     }
     else{
-        S=abs(((L2.P.y - L2.Q.y) * (L2.P.x - L1.P.x) + (L2.Q.x - L2.P.x) * (L2.P.y - L1.P.y)))/Z;
-        T=abs(((L1.P.y - L1.Q.y) * (L2.P.x - L1.P.x) + (L1.Q.x - L1.P.x) * (L2.P.y - L1.P.y)))/Z;
+        S=fabs(((L2.P.y - L2.Q.y) * (L2.P.x - L1.P.x) + (L2.Q.x - L2.P.x) * (L2.P.y - L1.P.y)))/Z;
+        T=fabs(((L1.P.y - L1.Q.y) * (L2.P.x - L1.P.x) + (L1.Q.x - L1.P.x) * (L2.P.y - L1.P.y)))/Z;
     }
 
     if ((0<=S && S<=1) && (0<=T && T<=1)){
-        double X = L1.P.x + (L1.Q.x - L1.P.x) * S;
-        double Y = L1.P.y + (L1.Q.y - L1.P.y) * S;
-        if ((0<S && S<1) && (0<T && T<1)) return {X,Y};
-        if(X!=)
-    }
-    else return {INF,INF};
-}
+        Point cross;
+        Line wl;
 
-//距離計算
-double Distance(Line L){
-    return sqrt((L.P.x-L.Q.x)*(L.P.x-L.Q.x)
-                +(L.P.y-L.Q.y)*(L.P.y-L.Q.y));
+        cross.x = L1.P.x + (L1.Q.x - L1.P.x) * S;
+        cross.y = L1.P.y + (L1.Q.y - L1.P.y) * S;
+    
+        //交点が端点の場合
+        if(( fabs(cross.x - L1.P.x) < DBL_EPSILON && fabs(cross.y - L1.P.y) < DBL_EPSILON ) || ( fabs(cross.x - L2.P.x ) < DBL_EPSILON && fabs(cross.y - L2.P.y) < DBL_EPSILON ) 
+        || ( fabs(cross.x - L1.Q.x) < DBL_EPSILON && fabs(cross.y - L1.Q.y) < DBL_EPSILON ) || ( fabs(cross.x - L2.Q.x ) < DBL_EPSILON && fabs(cross.y - L2.Q.y) < DBL_EPSILON )) {
+            if((cross.x != L1.P.x && cross.y != L1.P.y) && (cross.x != L1.Q.x && cross.y != L1.Q.y)) {
+                if( fabs(cross.x - L2.P.x < DBL_EPSILON) && fabs(cross.y - L2.P.y < DBL_EPSILON) ) {
+                    cout<<"in1 <-------------------------------"<<endl;
+                    line[L1.L_ID].P = L1.P;
+                    line[L1.L_ID].Q = L2.P;
+                    wl.P = L1.Q;
+                    wl.Q = L2.P;
+                    wl.L_ID = line.size();
+                    line.push_back(wl);
+                    
+                    return{INF, INF};
+                }
+                if( fabs(cross.x - L2.Q.x < DBL_EPSILON) && fabs(cross.y - L2.Q.y < DBL_EPSILON) ) {
+                    cout<<"in2 <-------------------------------"<<endl;
+                    line[L1.L_ID].P = L1.P;
+                    line[L1.L_ID].Q = L2.Q;
+                    wl.P = L1.Q;
+                    wl.Q = L2.Q;
+                    wl.L_ID = line.size();
+                    line.push_back(wl);                    
+                   return{INF, INF};
+                }
+            }
+            if((cross.x != L2.P.x && cross.y != L2.P.y) && (cross.x != L2.Q.x && cross.y != L2.Q.y)) {
+                if( fabs(cross.x - L1.P.x < DBL_EPSILON) && fabs(cross.y - L1.P.y < DBL_EPSILON) ) {
+                    cout<<"in3 <-------------------------------"<<endl;
+                    line[L2.L_ID].P = L2.P;
+                    line[L2.L_ID].Q = L1.P;
+                    wl.P = L2.Q;
+                    wl.Q = L1.P;
+                    wl.L_ID = line.size();
+                    line.push_back(wl);
+                   
+                    return{INF, INF};
+                }
+                if( fabs(cross.x - L1.Q.x < DBL_EPSILON) && fabs(cross.y - L1.Q.y < DBL_EPSILON) ) {
+                    cout<<"in4 <-------------------------------"<<endl;
+                    line[L2.L_ID].P = L2.P;
+                    line[L2.L_ID].Q = L1.Q;
+                    wl.P = L2.Q;
+                    wl.Q = L1.Q;
+                    wl.L_ID = line.size();
+                    line.push_back(wl);
+
+                    return{INF, INF};
+                }
+            }
+        }
+        //交点が端点でない場合
+        else{
+            cout<<"in5 <-------------------------------"<<endl;
+
+            cross_count++;
+            cross.P_ID=point.size();
+            point.push_back(cross);
+
+            //辺の更新
+            line[L1.L_ID].P = L1.P;
+            line[L1.L_ID].Q = cross;
+        
+            line[L2.L_ID].P = L2.P;
+            line[L2.L_ID].Q = cross;
+
+            wl.P = cross;
+            wl.Q = L1.Q;
+            wl.L_ID = line.size();
+            line.push_back(wl);
+        
+            wl.P = cross;
+            wl.Q = L2.Q;
+            wl.L_ID = line.size();
+            line.push_back(wl);
+
+            cout<<"add ("<<cross.x<<", "<<cross.y<<")"<<endl;
+            cout<<"------------------------------------"<<endl;
+            return{cross.x,cross.y};
+        }
+    }
+    else{
+        cout<<"in6 <-------------------------------"<<endl;
+        return {INF,INF};
+    }
 }
 
 //文字型変換
@@ -107,47 +213,34 @@ int string_to_int(string s){
     }
 }
 
-//edgeの追加
-void addEdge(int v, int u, int weight){
-	//ノードuはノードvとつながっている情報を入れる	
-	node[ u ].edges_to.push_back( v );
-	//ノードuとノードvのエッジの重みを入れる
-	node[ u ].edges_cost.push_back( weight );
-	
-	//ノードvはノードuとつながっている情報を入れる
-	node[ v ].edges_to.push_back( u );
-	//ノードvとノードuのエッジの重みを入れる
-	node[ v ].edges_cost.push_back( weight );
-}
-
-//ダイクストラ
+//ダイクストラ法
 void dijkstra(int start, int goal) {
-    int i;
 
-    for(i=0; i<node.size();i++){
-           node[i].done=false;
-           node[i].cost=-1;
+    for(int i = 0; i < node_count; i++) {
+           node[i].done = false;
+           node[i].cost = -1;
     }
 
-    node[s].cost=0;
+    node[start].cost = 0;
 
-    while(1){
-        int doneNode=-1;
-        for( i=0; i<node.size();i++){
-            if(node[i].done==true) continue;
-            if(node[i].cost<0) continue; 
-            if(doneNode<0 || node[i].cost < node[doneNode].cost) doneNode = i;
+    while( 1 ){
+        int doneNode = -1;
+        for(int i = 0; i < node_count; i++) {
+            if(node[i].done == true) continue;
+            if(node[i].cost < 0) continue; 
+            if(doneNode < 0 || node[i].cost < node[doneNode].cost) doneNode = i;
         }
         
-        if(doneNode==-1) break;
+        if(doneNode == -1) break;
 
-        node[doneNode].done=true;
-        for(i=0;i<doneNode.edges_to.size();i++){
-            int to=node[doneNode].edges_to[i];
-            int cost = node[doneNode].cost+node[doneNode].edges_cost[i];
-        if(node[to].cost<0 || cost<node[to].cost){
-            node[to].cost=cost;
-            node[to].from=doneNode;
+        node[doneNode].done = true;
+        for(int i = 0; i < node[doneNode].edges_to.size(); i++) {
+            int to = node[doneNode].edges_to[i];
+            int cost = node[doneNode].cost + node[doneNode].edges_cost[i];
+            if(node[to].cost < 0 || cost < node[to].cost) {
+            node[to].cost = cost;
+            node[to].from = doneNode;
+            }
         }
     }
 }
@@ -156,14 +249,7 @@ void dijkstra(int start, int goal) {
 //main
 //************************************************************************************
 int main(){
-    int N,M,P,Q; 
-    double x,y;
-    int b,e;
-    int i,j;
-
-    vector<Point> C;
-    vector<vector<double> > adjacent;
-
+    
     cin>>N>>M>>P>>Q;
     //入力値のエラーメッセージ
     if(Nmax<N || N<Nmin){ 
@@ -179,63 +265,119 @@ int main(){
         exit(3);
     }
 
-    vector<Point> point(N);  
-    vector<Line> line(M);
-    for(i=0;i<N;i++){
-        cin>>x>>y;
+    Point Pin;
+    for(int i=0;i<N;i++){
+        cin>>Pin.x>>Pin.y;
         //入力値のエラーメッセージ
-        if((XYmax<x || XYmin>x) || (XYmax<y || XYmin>y)){
+        if((XYmax < Pin.x || XYmin > Pin.x) || (XYmax < Pin.y || XYmin > Pin.y)){
             cout<<"ERROR: "<<XYmin<<"<=x,y<="<<XYmax<<"\n";
             exit(4);
         }
-        else point[i]={x,y};
+        else{
+            point.push_back(Pin);
+            point[i].P_ID = i;
+        }
     }
-    for(i=0;i<M;i++){
-        cin>>b>>e;
-        --b,--e;
-        line[i]={point[b],point[e]};
-        
+
+    Line  Lin;
+    for(int i=0;i<M;i++){
+        cin>>Lin.P.P_ID>>Lin.Q.P_ID;
+        Lin.P.P_ID--;
+        Lin.Q.P_ID--;
+        Lin.P.x = point[Lin.P.P_ID].x;
+        Lin.P.y = point[Lin.P.P_ID].y;
+        Lin.Q.x = point[Lin.Q.P_ID].x;
+        Lin.Q.y = point[Lin.Q.P_ID].y;
+        line.push_back(Lin);
+        line[i].L_ID = i;
     }
 
     vector<Qdata> qdata(Q);
     string s,d;
     int k;
-    for(i=0;i<Q;i++){
+    for(int i=0;i<Q;i++){
         cin>>s>>d>>k;
         qdata[i].s=s,qdata[i].d=d,qdata[i].k=k;
         qdata[i].int_s=string_to_int(qdata[i].s);
         qdata[i].int_d=string_to_int(qdata[i].d);
-    }
-    
-    for(i=0;i<M;i++){
-        for(j=i+1;j<M;j++){
-            Point S=searchIntersection(line[i],line[j]);
+    } 
+
+    //交点検索
+    vector<Point> C;
+    for(int i = 0; i < line.size(); i++){
+        for(int j = i + 1; j < line.size(); j++){
+#ifdef DEBUG 
+            cout<<"i = "<<i<<"\t"<<"j = "<<j;
+
+            cout<<"("<<line[i].P.x<<", "<<line[i].P.y<<")"
+                <<" ("<<line[i].Q.x<<", "<<line[i].Q.y<<")"
+                <<"\t("<<line[j].P.x<<", "<<line[j].P.y<<")"
+                <<" ("<<line[j].Q.x<<", "<<line[j].Q.y<<")"
+                <<endl;
+#endif             
+            Point S = searchIntersection(line[i],line[j]);
             if(S.x==INF && S.y==INF) continue;
             C.push_back(S);
         }
     }
+    
     sort(C.begin(),C.end());
+
+    for(int i = 0; i < line.size(); i++) {
+        addEdge( line[i].P.P_ID, line[i].Q.P_ID, Distance( line[i].P, line[i].Q ) );
+    }
+    for(int i = 0; i < qdata.size(); i++) {
+        dijkstra(qdata[i].int_s, qdata[i].int_d);
+    }
     
 
-    for(i=0;i<C.size();i++){
+#ifdef DEBUG
+    cout<<"-------------"<<endl;
+    cout<<"intersection"<<endl;
+    for(int i=0;i<C.size();i++){
         cout<<C[i].x<<"\t"<<C[i].y<<"\n";
     }
 
-    cout << node[end].cost << endl;
+    cout<<"-------------"<<endl;
+    cout<<"point"<<endl;
+    cout<<"intersection counter -- "<<cross_count<<endl;
+    for(int i=0; i<point.size(); i++){
+        cout<<"<"<<point[i].P_ID<<"> "<<point[i].x<<"\t"<<point[i].y<<endl;
+    }
 
-    vector<int> path;//最短経路の情報を保持するvector
-    //最短経路をゴールから順にスタートまでたどる
-	for(int i = end ; i != start ; i = node[i].from ){
-		path.push_back(i);
-	}
-	path.push_back(start);
+    cout<<"-------------"<<endl;
+    cout<<"line"<<endl;
+    for(int i = 0; i<line.size(); i++){
+        cout<<"<"<<line[i].L_ID<<"> "<<line[i].P.P_ID<<"\t"<<line[i].Q.P_ID<<endl;
+    }
+    for(int i = 0; i < line.size(); i++){
+        cout<<line[i].P.x<<"\t";
+    }
+    cout<<endl;
+    for(int i = 0; i < line.size(); i++){
+        cout<<line[i].P.y<<"\t";
+    }
+    cout<<endl;
+    for(int i = 0; i < line.size(); i++){
+        cout<<line[i].Q.x<<"\t";
+    }
+    cout<<endl;
+    for(int i = 0; i < line.size(); i++){
+        cout<<line[i].Q.y<<"\t";
+    }
+    cout<<endl;
 
-	//最短経路の出力
-	cout << "最短経路は" << endl;
-	for(int i = path.size()-1 ; i >= 0 ; i--){
-		cout << path[i] << " ";
-	}
-	cout << endl;
+    cout<<"-------------"<<endl;
+    cout<<"node"<<endl;
+    cout<<"node counter -- "<<node_count<<endl;
+    
+    for(int i = 0; i < node_count; i++){
+       for(int j = 0; j<node[i].edges_to.size(); j++){
+            cout<<"node["<<i<<"].edge_to["<<j<<"]="<<node[i].edges_to[j];
+            cout<<"\tcost "<<node[i].edges_cost[j]<<endl;
+        }
+    }
+#endif
 
     return 0;
 }
