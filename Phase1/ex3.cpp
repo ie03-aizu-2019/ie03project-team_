@@ -8,24 +8,25 @@
 using namespace std;
 
 //マクロ定義
-#define Nmax 1000
-#define Nmin 2
+# define Nmax 1000
+# define Nmin 2
 
-#define Mmax 500
-#define Mmin 2
+# define Mmax 500
+# define Mmin 2
 
-#define Qmax 100
-#define Qmin 0
+# define Qmax 100
+# define Qmin 0
 
-#define XYmax 1000
-#define XYmin 0
+# define XYmax 1000
+# define XYmin 0
 
-#define INF 1e10
-#define EPS 1e-8
+# define INF 1e10
+# define EPS 1e-8
 
-#define Vmax 10
+# define Vmax 10
 
-#define DEBUG
+//# define DEBUG1
+# define DEBUG2
 //構造体
 //************************************************************************************
 struct Point{
@@ -35,11 +36,18 @@ struct Point{
     bool operator<(const Point& right)const{
         return x==right.x?y<right.y:x<right.x;
     }
+    bool operator==(const Point& right)const{
+        return ( fabs( x - right.x ) < DBL_EPSILON && fabs( y - right.y ) < DBL_EPSILON ) ;
+    }
 };
 
 struct Line{
     Point P,Q;
     int L_ID;
+
+    vector<Point> Line_Cross;
+    int Line_Cross_count = 0;
+
 };
 
 struct Qdata{
@@ -82,7 +90,7 @@ double Distance(Point P1, Point P2){
 
 //edgeの追加
 void addEdge(int v, int u, double weight){	
-	node_count++;
+	node_count = node_count + 2;
     node[u].edges_to.push_back( v );
 	node[u].edges_cost.push_back( weight );
 
@@ -95,10 +103,7 @@ Point searchIntersection(Line L1, Line L2){
     double Z,S,T;
     
     Z = fabs(((L1.Q.x-L1.P.x) * (L2.P.y-L2.Q.y)) + ((L2.Q.x-L2.P.x) * (L1.Q.y-L1.P.y)));
-    if( -EPS< Z && Z < EPS ){
-        cout<<"in0 <-------------------------------"<<endl;
-        return {INF,INF};
-    }
+    if( -EPS< Z && Z < EPS ) return {INF,INF};
     else{
         S=fabs(((L2.P.y - L2.Q.y) * (L2.P.x - L1.P.x) + (L2.Q.x - L2.P.x) * (L2.P.y - L1.P.y)))/Z;
         T=fabs(((L1.P.y - L1.Q.y) * (L2.P.x - L1.P.x) + (L1.Q.x - L1.P.x) * (L2.P.y - L1.P.y)))/Z;
@@ -116,86 +121,53 @@ Point searchIntersection(Line L1, Line L2){
         || ( fabs(cross.x - L1.Q.x) < DBL_EPSILON && fabs(cross.y - L1.Q.y) < DBL_EPSILON ) || ( fabs(cross.x - L2.Q.x ) < DBL_EPSILON && fabs(cross.y - L2.Q.y) < DBL_EPSILON )) {
             if((cross.x != L1.P.x && cross.y != L1.P.y) && (cross.x != L1.Q.x && cross.y != L1.Q.y)) {
                 if( fabs(cross.x - L2.P.x < DBL_EPSILON) && fabs(cross.y - L2.P.y < DBL_EPSILON) ) {
-                    cout<<"in1 <-------------------------------"<<endl;
-                    line[L1.L_ID].P = L1.P;
-                    line[L1.L_ID].Q = L2.P;
-                    wl.P = L1.Q;
-                    wl.Q = L2.P;
-                    wl.L_ID = line.size();
-                    line.push_back(wl);
+                    line[ L1.L_ID ].Line_Cross.push_back(L2.P);
+                    line[ L1.L_ID ].Line_Cross_count++; 
                     
                     return{INF, INF};
                 }
                 if( fabs(cross.x - L2.Q.x < DBL_EPSILON) && fabs(cross.y - L2.Q.y < DBL_EPSILON) ) {
-                    cout<<"in2 <-------------------------------"<<endl;
-                    line[L1.L_ID].P = L1.P;
-                    line[L1.L_ID].Q = L2.Q;
-                    wl.P = L1.Q;
-                    wl.Q = L2.Q;
-                    wl.L_ID = line.size();
-                    line.push_back(wl);                    
-                   return{INF, INF};
+                    line[ L1.L_ID ].Line_Cross.push_back(L2.Q);
+                    line[ L1.L_ID ].Line_Cross_count++; 
+
+                    return{INF, INF};
                 }
             }
             if((cross.x != L2.P.x && cross.y != L2.P.y) && (cross.x != L2.Q.x && cross.y != L2.Q.y)) {
                 if( fabs(cross.x - L1.P.x < DBL_EPSILON) && fabs(cross.y - L1.P.y < DBL_EPSILON) ) {
-                    cout<<"in3 <-------------------------------"<<endl;
-                    line[L2.L_ID].P = L2.P;
-                    line[L2.L_ID].Q = L1.P;
-                    wl.P = L2.Q;
-                    wl.Q = L1.P;
-                    wl.L_ID = line.size();
-                    line.push_back(wl);
-                   
+                    line[ L2.L_ID ].Line_Cross.push_back(L1.P);
+                    line[ L2.L_ID ].Line_Cross_count++; 
+                    
                     return{INF, INF};
                 }
                 if( fabs(cross.x - L1.Q.x < DBL_EPSILON) && fabs(cross.y - L1.Q.y < DBL_EPSILON) ) {
-                    cout<<"in4 <-------------------------------"<<endl;
-                    line[L2.L_ID].P = L2.P;
-                    line[L2.L_ID].Q = L1.Q;
-                    wl.P = L2.Q;
-                    wl.Q = L1.Q;
-                    wl.L_ID = line.size();
-                    line.push_back(wl);
-
+                    line[ L2.L_ID ].Line_Cross.push_back(L1.Q);
+                    line[ L2.L_ID ].Line_Cross_count++; 
+                    
                     return{INF, INF};
                 }
             }
         }
         //交点が端点でない場合
         else{
-            cout<<"in5 <-------------------------------"<<endl;
-
             cross_count++;
             cross.P_ID=point.size();
             point.push_back(cross);
 
-            //辺の更新
-            line[L1.L_ID].P = L1.P;
-            line[L1.L_ID].Q = cross;
-        
-            line[L2.L_ID].P = L2.P;
-            line[L2.L_ID].Q = cross;
-
-            wl.P = cross;
-            wl.Q = L1.Q;
-            wl.L_ID = line.size();
-            line.push_back(wl);
-        
-            wl.P = cross;
-            wl.Q = L2.Q;
-            wl.L_ID = line.size();
-            line.push_back(wl);
-
+            line[ L1.L_ID ].Line_Cross.push_back(cross);
+            line[ L1.L_ID ].Line_Cross_count++; 
+                    
+            line[ L2.L_ID ].Line_Cross.push_back(cross);
+            line[ L2.L_ID ].Line_Cross_count++; 
+                          
+            
             cout<<"add ("<<cross.x<<", "<<cross.y<<")"<<endl;
             cout<<"------------------------------------"<<endl;
             return{cross.x,cross.y};
         }
     }
-    else{
-        cout<<"in6 <-------------------------------"<<endl;
-        return {INF,INF};
-    }
+    else return {INF,INF};
+
 }
 
 //文字型変換
@@ -243,6 +215,10 @@ void dijkstra(int start, int goal) {
             }
         }
     }
+}
+
+bool is_eqals(const Point& left, const Point& right){
+    return ( fabs( left.x - right.x ) < DBL_EPSILON && fabs( left.y - right.y ) < DBL_EPSILON ) ;
 }
 //************************************************************************************
 
@@ -303,11 +279,10 @@ int main(){
     } 
 
     //交点検索
-    vector<Point> C;
     for(int i = 0; i < line.size(); i++){
         for(int j = i + 1; j < line.size(); j++){
-#ifdef DEBUG 
-            cout<<"i = "<<i<<"\t"<<"j = "<<j;
+#ifdef DEBUG1 
+            cout<<"i = "<<i<<"\t"<<"j = "<<j;       
 
             cout<<"("<<line[i].P.x<<", "<<line[i].P.y<<")"
                 <<" ("<<line[i].Q.x<<", "<<line[i].Q.y<<")"
@@ -317,26 +292,38 @@ int main(){
 #endif             
             Point S = searchIntersection(line[i],line[j]);
             if(S.x==INF && S.y==INF) continue;
-            C.push_back(S);
         }
     }
     
-    sort(C.begin(),C.end());
-
-    for(int i = 0; i < line.size(); i++) {
-        addEdge( line[i].P.P_ID, line[i].Q.P_ID, Distance( line[i].P, line[i].Q ) );
+    for( int i = 0; i < line.size(); i++ ){
+        for( int j = 0; j < line[ i ].Line_Cross.size(); j++){
+            sort( line[ i ].Line_Cross.begin(), line[ i ].Line_Cross.end() );
+            //vector<Point>::iterator new_end = unique(line[ i ].Line_Cross.begin(), line[ i ].Line_Cross.end());
+            //line[ i ].Line_Cross.erase( new_end, line[ i ].Line_Cross.end() );
+            line[ i ].Line_Cross.erase( unique(line[ i ].Line_Cross.begin(), line[ i ].Line_Cross.end()), line[ i ].Line_Cross.end() );
+        }
     }
+    
+
+    /*for(int i = 0; i < line.size(); i++) {
+        addEdge( line[ i ].P.P_ID, line[ i ].Line_Cross[ 0 ].P_ID, Distance( line[ i ].P, line[ i ].Line_Cross[ 0 ] ) );
+        for(int j = 0; j < line[ i ].Line_Cross_count - 1; j++){
+            addEdge( line[ i ].Line_Cross[ j ].P_ID, line[ i ].Line_Cross[ j + 1 ].P_ID, 
+                    Distance( line[ i ].Line_Cross[ j ], line[ i ].Line_Cross[ j + 1 ] ) );
+        }
+        addEdge( line[ i ].Q.P_ID, line[ i ].Line_Cross[ line[ i ].Line_Cross_count ].P_ID, 
+                    Distance( line[ i ].Q, line[ i ].Line_Cross[ line[ i ].Line_Cross_count ] ) );
+    }*/
+    
+    addEdge( line[ 0 ].P.P_ID, line[ 0 ].Line_Cross[ 0 ].P_ID, Distance( line[ 0 ].P, line[ 0 ].Line_Cross[ 0 ] ) );
+    
+    cout<<"**************"<<line[ 3 ].Line_Cross[ 1 ].P_ID<<endl;
     for(int i = 0; i < qdata.size(); i++) {
         dijkstra(qdata[i].int_s, qdata[i].int_d);
     }
     
 
-#ifdef DEBUG
-    cout<<"-------------"<<endl;
-    cout<<"intersection"<<endl;
-    for(int i=0;i<C.size();i++){
-        cout<<C[i].x<<"\t"<<C[i].y<<"\n";
-    }
+#ifdef DEBUG2
 
     cout<<"-------------"<<endl;
     cout<<"point"<<endl;
@@ -350,22 +337,17 @@ int main(){
     for(int i = 0; i<line.size(); i++){
         cout<<"<"<<line[i].L_ID<<"> "<<line[i].P.P_ID<<"\t"<<line[i].Q.P_ID<<endl;
     }
-    for(int i = 0; i < line.size(); i++){
-        cout<<line[i].P.x<<"\t";
+    
+    cout<<"-------------"<<endl;
+    cout<<"Line_Cross"<<endl;
+    for(int i = 0; i<line.size(); i++){
+        cout<<"<"<<line[ i ].L_ID<<">"<<endl;
+        cout<<"("<<line[ i ].P.x<<",\t"<<line[ i ].P.y<<")\t";
+        for( int j = 0; j < line[ i ].Line_Cross.size(); j++){
+            cout<<"("<<line[ i ].Line_Cross[ j ].x<<",\t"<<line[ i ].Line_Cross[ j ].y<<")\t";
+        }
+        cout<<"("<<line[ i ].Q.x<<",\t"<<line[ i ].Q.y<<")\t"<<endl;
     }
-    cout<<endl;
-    for(int i = 0; i < line.size(); i++){
-        cout<<line[i].P.y<<"\t";
-    }
-    cout<<endl;
-    for(int i = 0; i < line.size(); i++){
-        cout<<line[i].Q.x<<"\t";
-    }
-    cout<<endl;
-    for(int i = 0; i < line.size(); i++){
-        cout<<line[i].Q.y<<"\t";
-    }
-    cout<<endl;
 
     cout<<"-------------"<<endl;
     cout<<"node"<<endl;
