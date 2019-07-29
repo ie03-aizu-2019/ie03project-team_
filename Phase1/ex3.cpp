@@ -46,7 +46,6 @@ struct Line{
     int L_ID;
 
     vector<Point> Line_Cross;
-    int Line_Cross_count = 0;
 
 };
 
@@ -90,7 +89,7 @@ double Distance(Point P1, Point P2){
 
 //edgeの追加
 void addEdge(int v, int u, double weight){	
-	node_count = node_count + 2;
+	node_count++;
     node[u].edges_to.push_back( v );
 	node[u].edges_cost.push_back( weight );
 
@@ -122,27 +121,23 @@ Point searchIntersection(Line L1, Line L2){
             if((cross.x != L1.P.x && cross.y != L1.P.y) && (cross.x != L1.Q.x && cross.y != L1.Q.y)) {
                 if( fabs(cross.x - L2.P.x < DBL_EPSILON) && fabs(cross.y - L2.P.y < DBL_EPSILON) ) {
                     line[ L1.L_ID ].Line_Cross.push_back(L2.P);
-                    line[ L1.L_ID ].Line_Cross_count++; 
                     
                     return{INF, INF};
                 }
                 if( fabs(cross.x - L2.Q.x < DBL_EPSILON) && fabs(cross.y - L2.Q.y < DBL_EPSILON) ) {
                     line[ L1.L_ID ].Line_Cross.push_back(L2.Q);
-                    line[ L1.L_ID ].Line_Cross_count++; 
-
+                    
                     return{INF, INF};
                 }
             }
             if((cross.x != L2.P.x && cross.y != L2.P.y) && (cross.x != L2.Q.x && cross.y != L2.Q.y)) {
                 if( fabs(cross.x - L1.P.x < DBL_EPSILON) && fabs(cross.y - L1.P.y < DBL_EPSILON) ) {
                     line[ L2.L_ID ].Line_Cross.push_back(L1.P);
-                    line[ L2.L_ID ].Line_Cross_count++; 
                     
                     return{INF, INF};
                 }
                 if( fabs(cross.x - L1.Q.x < DBL_EPSILON) && fabs(cross.y - L1.Q.y < DBL_EPSILON) ) {
                     line[ L2.L_ID ].Line_Cross.push_back(L1.Q);
-                    line[ L2.L_ID ].Line_Cross_count++; 
                     
                     return{INF, INF};
                 }
@@ -155,10 +150,9 @@ Point searchIntersection(Line L1, Line L2){
             point.push_back(cross);
 
             line[ L1.L_ID ].Line_Cross.push_back(cross);
-            line[ L1.L_ID ].Line_Cross_count++; 
                     
             line[ L2.L_ID ].Line_Cross.push_back(cross);
-            line[ L2.L_ID ].Line_Cross_count++; 
+            
                           
             
             cout<<"add ("<<cross.x<<", "<<cross.y<<")"<<endl;
@@ -298,26 +292,26 @@ int main(){
     for( int i = 0; i < line.size(); i++ ){
         for( int j = 0; j < line[ i ].Line_Cross.size(); j++){
             sort( line[ i ].Line_Cross.begin(), line[ i ].Line_Cross.end() );
-            //vector<Point>::iterator new_end = unique(line[ i ].Line_Cross.begin(), line[ i ].Line_Cross.end());
-            //line[ i ].Line_Cross.erase( new_end, line[ i ].Line_Cross.end() );
             line[ i ].Line_Cross.erase( unique(line[ i ].Line_Cross.begin(), line[ i ].Line_Cross.end()), line[ i ].Line_Cross.end() );
         }
     }
     
-
-    /*for(int i = 0; i < line.size(); i++) {
+    for(int i = 0; i < 4; i++){
+        //addEdge( line[ 1 ].P.P_ID, line[ 1 ].Line_Cross[ 0 ].P_ID, Distance( line[ 1 ].P, line[ 1 ].Line_Cross[ 0 ] ) );
         addEdge( line[ i ].P.P_ID, line[ i ].Line_Cross[ 0 ].P_ID, Distance( line[ i ].P, line[ i ].Line_Cross[ 0 ] ) );
-        for(int j = 0; j < line[ i ].Line_Cross_count - 1; j++){
+        for(int j = 0; j < line[ i ].Line_Cross.size() ; j++){
             addEdge( line[ i ].Line_Cross[ j ].P_ID, line[ i ].Line_Cross[ j + 1 ].P_ID, 
-                    Distance( line[ i ].Line_Cross[ j ], line[ i ].Line_Cross[ j + 1 ] ) );
+                        Distance( line[ i ].Line_Cross[ j ], line[ i ].Line_Cross[ j ] ) );
         }
-        addEdge( line[ i ].Q.P_ID, line[ i ].Line_Cross[ line[ i ].Line_Cross_count ].P_ID, 
-                    Distance( line[ i ].Q, line[ i ].Line_Cross[ line[ i ].Line_Cross_count ] ) );
-    }*/
+        addEdge( line[ i ].Q.P_ID, line[ i ].Line_Cross[ line[ i ].Line_Cross.size() ].P_ID, 
+                        Distance( line[ i ].Q, line[ i ].Line_Cross[ line[ i ].Line_Cross.size() ] ) );
+    }       
     
-    addEdge( line[ 0 ].P.P_ID, line[ 0 ].Line_Cross[ 0 ].P_ID, Distance( line[ 0 ].P, line[ 0 ].Line_Cross[ 0 ] ) );
     
-    cout<<"**************"<<line[ 3 ].Line_Cross[ 1 ].P_ID<<endl;
+    
+    addEdge( line[ 1 ].P.P_ID, line[ 1 ].Line_Cross[ 0 ].P_ID, Distance( line[ 1 ].P, line[ 1 ].Line_Cross[ 0 ] ) );
+    
+    
     for(int i = 0; i < qdata.size(); i++) {
         dijkstra(qdata[i].int_s, qdata[i].int_d);
     }
@@ -341,12 +335,12 @@ int main(){
     cout<<"-------------"<<endl;
     cout<<"Line_Cross"<<endl;
     for(int i = 0; i<line.size(); i++){
-        cout<<"<"<<line[ i ].L_ID<<">"<<endl;
-        cout<<"("<<line[ i ].P.x<<",\t"<<line[ i ].P.y<<")\t";
+        cout<<"<"<<line[ i ].L_ID<<">  "<<"Line_Cross_count = "<<line[ i ].Line_Cross.size()<<endl;
+        cout<<"<"<<line[ i ].P.P_ID<<">"<<"("<<line[ i ].P.x<<",\t"<<line[ i ].P.y<<")\t";
         for( int j = 0; j < line[ i ].Line_Cross.size(); j++){
-            cout<<"("<<line[ i ].Line_Cross[ j ].x<<",\t"<<line[ i ].Line_Cross[ j ].y<<")\t";
+            cout<<"<"<<line[ i ].Line_Cross[ j ].P_ID<<">"<<"("<<line[ i ].Line_Cross[ j ].x<<",\t"<<line[ i ].Line_Cross[ j ].y<<")\t";
         }
-        cout<<"("<<line[ i ].Q.x<<",\t"<<line[ i ].Q.y<<")\t"<<endl;
+        cout<<"<"<<line[ i ].Q.P_ID<<">"<<"("<<line[ i ].Q.x<<",\t"<<line[ i ].Q.y<<")\t"<<endl;
     }
 
     cout<<"-------------"<<endl;
@@ -354,7 +348,7 @@ int main(){
     cout<<"node counter -- "<<node_count<<endl;
     
     for(int i = 0; i < node_count; i++){
-       for(int j = 0; j<node[i].edges_to.size(); j++){
+       for(int j = 0; j < node[i].edges_to.size(); j++){
             cout<<"node["<<i<<"].edge_to["<<j<<"]="<<node[i].edges_to[j];
             cout<<"\tcost "<<node[i].edges_cost[j]<<endl;
         }
